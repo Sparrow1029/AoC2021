@@ -38,7 +38,9 @@ fn get_mean(vec: &mut Vec<i32>) -> i32 {
 fn gaussian_distance(pos: i32, crabs: &Vec<i32>) -> i32 {
     crabs
         .iter()
+        // get distance of each crab relative to `pos`
         .map(|c| (c - pos).abs())
+        // get gaussian sum of each relative distance
         .map(|n| (n * (n + 1)) / 2)
         .sum::<i32>()
 }
