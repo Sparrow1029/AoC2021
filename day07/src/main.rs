@@ -39,7 +39,6 @@ fn gaussian_distance(pos: i32, crabs: &Vec<i32>) -> i32 {
     crabs
         .iter()
         .map(|c| (c - pos).abs())
-        .into_iter()
         .map(|n| (n * (n + 1)) / 2)
         .sum::<i32>()
 }
