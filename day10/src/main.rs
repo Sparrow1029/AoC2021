@@ -42,9 +42,9 @@ fn part1(nav_sys: Vec<Vec<char>>, pairs: &HashMap<char, char>) -> (Vec<Vec<char>
     'lines: for line in &nav_sys {
         let mut open = vec![];
         for c in line {
-            if OPEN_SYMBOLS.contains(&c) {
+            if OPEN_SYMBOLS.contains(c) {
                 open.push(c);
-            } else if CLOSE_SYMBOLS.contains(&c) {
+            } else if CLOSE_SYMBOLS.contains(c) {
                 let match_sym = match open.pop() {
                     Some(sym) => *sym,
                     None => {
