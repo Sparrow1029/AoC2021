@@ -84,11 +84,16 @@ fn part2(incompletes: &mut Vec<Vec<char>>, pairs: &HashMap<char, char>) -> u64 {
 }
 
 fn calculate_autocomplete_score(symbols: Vec<char>) -> u64 {
-    let score_map = HashMap::from([(')', 1), (']', 2), ('}', 3), ('>', 4)]);
     let mut total_score = 0;
     for c in symbols {
         total_score *= 5;
-        total_score += score_map.get(&c).unwrap();
+        total_score += match c {
+            ')' => 1,
+            ']' => 2,
+            '}' => 3,
+            '>' => 4,
+            _ => panic!("invalid character: '{}'", c),
+        }
     }
     total_score
 }
@@ -102,8 +107,16 @@ fn main() {
     // Part 1
     let mut pairs = HashMap::from(PAIRS);
     let (mut incomplete, corrupted) = part1(navigation, &pairs);
-    let scores = HashMap::from([(')', 3), (']', 57), ('}', 1197), ('>', 25137)]);
-    let sum: u32 = corrupted.iter().map(|c| scores.get(c).unwrap()).sum();
+    let sum: u32 = corrupted
+        .iter()
+        .map(|c| match c {
+            ')' => 3,
+            ']' => 57,
+            '}' => 1197,
+            '>' => 25137,
+            _ => panic!("invalid char: '{}'", c),
+        })
+        .sum();
     println!("Part 1 - corrupt character score: {}", sum);
 
     // Part 2
