@@ -16,8 +16,9 @@ lazy_static! {
 const ARR_COLS: usize = 100;
 const ARR_ROWS: usize = 100;
 const ADJACENT: [(i32, i32); 4] = [(1, 0), (0, 1), (-1, 0), (0, -1)];
+type LavaGrid = [[u8; ARR_COLS]; ARR_ROWS];
 
-fn parse_input(path: &str) -> Result<[[u8; ARR_COLS]; ARR_ROWS], Error> {
+fn parse_input(path: &str) -> Result<LavaGrid, Error> {
     let mut lava_grid = [[0; ARR_COLS]; ARR_ROWS];
     let mut f = BufReader::new(
         File::open(path).unwrap_or_else(|e| panic!("file open failed: {} - {}", e, path)),
@@ -62,7 +63,7 @@ fn get_adjacent(x: usize, y: usize) -> Vec<(usize, usize)> {
     coords
 }
 
-fn find_low_points(lava_grid: &[[u8; ARR_COLS]; ARR_ROWS]) -> Vec<u32> {
+fn find_low_points(lava_grid: &LavaGrid) -> Vec<u32> {
     let mut low_pts = vec![];
     for y in 0..ARR_ROWS {
         for x in 0..ARR_COLS {
@@ -121,7 +122,7 @@ struct Grid {
 }
 
 impl Grid {
-    fn from_lava_grid(arr: &[[u8; ARR_COLS]; ARR_ROWS]) -> Self {
+    fn from_lava_grid(arr: &LavaGrid) -> Self {
         let mut grid = [[Node::new(0, 0, 0); ARR_COLS]; ARR_ROWS];
         for y in 0..ARR_ROWS {
             for x in 0..ARR_COLS {
