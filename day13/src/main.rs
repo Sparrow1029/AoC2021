@@ -6,7 +6,7 @@ type Point = (isize, isize);
 
 /// Take the point defining a fold line & the number of currently visible points
 /// and return the points visible after executing the fold
-fn fold(fold_pt: Point, points: &mut Vec<Point>) -> Vec<Point> {
+fn fold(fold_pt: Point, points: &Vec<Point>) -> Vec<Point> {
     let mut keep: HashSet<Point> = HashSet::new();
     let mut to_fold: Vec<Point> = Vec::new();
     // Keep any points on the "upper" side of the paper for a fold along the x-axis.
@@ -109,12 +109,12 @@ fn main() {
     let (mut points, folds) = parse_input(path.as_str());
 
     // Part 1
-    points = fold(*folds.first().unwrap(), &mut points);
+    points = fold(*folds.first().unwrap(), &points);
     println!("Part 1 - number of visible points after single fold: {}\n", points.len());
 
     // Part 2
     for f in folds {
-        points = fold(f, &mut points);
+        points = fold(f, &points);
     }
     println!("Part 2 - result of folds:");
     print_pt_grid(points);
