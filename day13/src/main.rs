@@ -109,15 +109,13 @@ fn main() {
     let (mut points, folds) = parse_input(path.as_str());
 
     // Part 1
-    let mut part1_points = points.clone();
-    let part1_fold = folds[0];
-    points = fold(part1_fold, &mut part1_points);
+    points = fold(*folds.first().unwrap(), &mut points);
     println!("Part 1 - number of visible points after single fold: {}\n", points.len());
 
+    // Part 2
     for f in folds {
         points = fold(f, &mut points);
     }
-    // Part 2
     println!("Part 2 - result of folds:");
     print_pt_grid(points);
 }
