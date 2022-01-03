@@ -1,12 +1,30 @@
 use std::collections::HashMap;
 use std::env::var;
 use std::fs::read_to_string;
+// ANIMATE
+// use std::{thread, time};
 use priority_queue::DoublePriorityQueue;
+
+// ANIMATE
+// const SLEEP: time::Duration = time::Duration::from_millis(100);
 
 type Coord = (isize, isize);
 type PathMap = HashMap<Coord, Coord>;
 type CostMap = HashMap<Coord, f64>;
 
+// ANIMATE
+///// Allows for printing animated grid state inside each cycle
+// fn clear_screen() {
+//     print!("{esc}c", esc = 27 as char);
+// }
+
+/// Thank you, [Redblob Games](https://www.redblobgames.com/pathfinding/a-star/implementation.html) for the excellent implementation
+/// explanations for Dijkstra & A* search.
+///
+/// This implementation is very much like the Python one shown on Redblob games. Uses `priority_queue::DoublePriorityQueue` for popping the
+/// minimum-weighted value on each step. Because of how the values are distributed in this particular graph, _most_ of the nodes
+/// (generally, _ALL_ of them for these puzzle inputs...) are visited in the quest to find the least-cost path through to the
+/// bottom-right corner of the grid.
 fn a_star_search(graph: &WeightedGraph, start: Coord, goal: Coord) -> (PathMap, CostMap) {
     let mut frontier = DoublePriorityQueue::new();
     frontier.push(start, 0);
@@ -17,18 +35,19 @@ fn a_star_search(graph: &WeightedGraph, start: Coord, goal: Coord) -> (PathMap, 
 
     while !frontier.is_empty() {
         let current = frontier.pop_min().unwrap().0;
-        // println!("Current: {:?}", current);
+        // ANIMATE
+        // Do NOT use with large graphs... terminal buffer gets very full...
+        // let path_so_far = reconstruct_path(&came_from, start, current);
+        // graph.display_with_path(&path_so_far, &cost_so_far);
+        // thread::sleep(SLEEP);
 
         if current == goal {
-            // println!("MADE IT");
             break;
         }
 
+        // Visit all E W N S neighbors of the grid
         for next in graph.neighbors(current) {
-            // println!("Next: {:?}, cost: {}", next, graph.cost(current, next));
-            // println!("cost_so_far[current] = {:?}", cost_so_far.get(&current));
             let new_cost = cost_so_far.get(&current).unwrap() + graph.cost(current, next);
-            // println!("New Cost: {}", new_cost);
             if !cost_so_far.contains_key(&next) || new_cost < *cost_so_far.get(&next).unwrap() {
                 cost_so_far.insert(next, new_cost);
                 let priority = new_cost + heuristic(next, goal);
@@ -36,6 +55,8 @@ fn a_star_search(graph: &WeightedGraph, start: Coord, goal: Coord) -> (PathMap, 
                 came_from.insert(next, current);
             }
         }
+        // ANIMATE
+        // clear_screen();
     }
     (came_from, cost_so_far)
 }
@@ -44,7 +65,6 @@ fn reconstruct_path(came_from: &PathMap, start: Coord, goal: Coord) -> Vec<Coord
     let mut current = goal;
     let mut path = vec![];
     while current != start {
-        println!("Current in path: {:?}", current);
         path.push(current);
         current = *came_from.get(&current).unwrap();
    }
@@ -67,13 +87,33 @@ struct WeightedGraph {
 }
 
 impl WeightedGraph {
-    fn cost(&self, _: Coord, to_node: Coord) -> f64 {
-        *self.weights.get(&to_node).unwrap_or(&1.0)
+    fn get(&self, id: Coord) -> Option<f64> {
+        match self.weights.get(&id) {
+            Some(result) => Some(*result),
+            None => None
+        }
+    }
+
+    fn bottom_right(&self) -> Coord {
+        (self.width-1, self.height-1)
+    }
+
+    fn cost(&self, from_node: Coord, to_node: Coord) -> f64 {
+        let prev_cost = *self.weights.get(&to_node).unwrap_or(&1.0);
+        let mut nudge = 0.0;
+        let (x1, y1) = from_node;
+        let (x2, y2) = to_node;
+        if ((x1 + y1) % 2 == 0) && x2 != x1 {
+            nudge = 1.0;
+        } else if ((x1 + y1) % 2 == 1) && y2 != y1 {
+            nudge = 1.0;
+        }
+        prev_cost + 0.001 * nudge
     }
 
     fn in_bounds(&self, id: Coord) -> bool {
         let (x, y) = id;
-        0 <= x && x <= self.width as isize && 0 <= y && y <= self.height as isize
+        0 <= x && x < self.width as isize && 0 <= y && y < self.height as isize
     }
 
     fn neighbors(&self, id: Coord) -> Vec<Coord> {
@@ -89,26 +129,72 @@ impl WeightedGraph {
     }
 
     fn display(&self) {
-        for y in 0..=self.height {
-            for x in 0..=self.width {
-                print!("{}", self.weights.get(&(x, y)).unwrap());
+        for y in 0..self.height {
+            for x in 0..self.width {
+                print!("{}", self.get((x, y)).unwrap());
             }
             println!();
         }
     }
 
-    fn display_with_path(&self, path: Vec<Coord>) {
-        for y in 0..=self.height {
-            for x in 0..=self.width {
-                let weight = self.weights.get(&(x, y)).unwrap();
-                // let color = match path.contains
-                //     v
-                // }
-                print!("{}", self.weights.get(&(x, y)).unwrap());
+    /// Expand grid as tiles by factor of `factor` and according to heuristic:
+    ///
+    /// for each expanded tile, weights increase by one unless they are > 9.0, which resets weight to 1.0.
+    fn expand(&mut self, factor: isize) {
+        // Expand horizontally first
+        for y in 0..self.height {
+            for f in 0..=factor {
+                for x in 0..self.width {
+                    let new_x = (f+1) * self.width + x;
+                    let old_x = f * self.width + x;
+                    let cur_val = self.get((old_x, y)).unwrap();
+                    let new_val = cur_val + 1.0;
+
+                    if new_val > 9.0 {
+                        self.weights.insert((new_x, y), 1.0);
+                    } else {
+                        self.weights.insert((new_x, y), new_val);
+                    }
+                }
+            }
+        }
+        self.width *= factor;
+
+        // Expand vertically
+        for f in 0..=factor {
+            for y in 0..self.height {
+                for x in 0..self.width {
+                    let new_y = (f+1) * self.height + y;
+                    let old_y = f * self.height + y;
+                    let cur_val = self.get((x, old_y)).unwrap();
+                    let new_val = cur_val + 1.0;
+
+                    if new_val > 9.0 {
+                        self.weights.insert((x, new_y), 1.0);
+                    } else {
+                        self.weights.insert((x, new_y), new_val);
+                    }
+                }
+            }
+        }
+        self.height *= factor;
+    }
+
+    fn display_with_path(&self, path: &Vec<Coord>, costs: &CostMap) {
+        let visited_nodes = costs.iter().map(|t| *t.0).collect::<Vec<Coord>>();
+        for y in 0..self.height {
+            for x in 0..self.width {
+                let color = if path.contains(&(x, y)) {
+                    "\x1b[1;36m"
+                } else if visited_nodes.contains(&(x, y)) {
+                    "\x1b[1;30m"
+                } else {
+                    ""
+                };
+                print!("{}{}\x1b[0m", color, self.get((x, y)).unwrap());
             }
             println!();
         }
-
     }
 }
 
@@ -136,24 +222,34 @@ fn parse_input(path: &str) -> WeightedGraph {
     }
     let (width, height) = get_max_xy(&pt_vec.iter().map(|pt| pt.0).collect::<Vec<Coord>>());
     WeightedGraph {
-        width, height, weights: HashMap::from_iter(pt_vec)
+        width: width + 1, height: height + 1, weights: HashMap::from_iter(pt_vec)
     }
 }
 
-fn get_total_cost(path: &Vec<Coord>, costs: &CostMap) -> f64 {
-    let mut sum = 0.0;
-    path.iter().for_each(|pt| sum += costs.get(pt).unwrap());
-    sum
-}
+// fn get_total_cost(path: &Vec<Coord>, costs: &CostMap) -> f64 {
+//     let mut sum = 0.0;
+//     path.iter().for_each(|pt| sum += costs.get(pt).unwrap());
+//     sum
+// }
 
 fn main() {
-    let graph = parse_input("input.txt");
-    graph.display();
-    let goal = (graph.width, graph.height);
-    // println!("GOAL: {:?}", goal);
+    let mut graph = parse_input("input.txt");
+
+    // Part 1
+    let goal = graph.bottom_right();
     let (came_from, costs) = a_star_search(&graph, (0, 0), goal);
     let reconstructed = reconstruct_path(&came_from, (0, 0), goal);
-    println!("Total cost: {}", get_total_cost(&reconstructed, &costs));
-    println!("Path reconstructed: {:?}", reconstruct_path(&came_from, (0,0), goal));
-    println!("last cost? {:?}", costs.get(&(graph.width, graph.height)).unwrap());
+    graph.display_with_path(&reconstructed, &costs);
+    let final_cost = costs.get(&graph.bottom_right()).unwrap().round();
+    println!("Final cost: {:?}", final_cost);
+
+    // Part 2
+    graph.expand(5);
+    let goal = graph.bottom_right();
+    let (came_from, costs) = a_star_search(&graph, (0, 0), goal);
+    // let reconstructed = reconstruct_path(&came_from, (0, 0), goal);
+    // graph.display_with_path(&reconstructed, &costs);  // YIKES... would need to implement a more efficient lookup for visited nodes, etc
+    let final_cost = costs.get(&graph.bottom_right()).unwrap().round();
+    println!("Final cost {:?}", final_cost);
+
 }
