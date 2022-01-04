@@ -1,22 +1,19 @@
 use std::collections::HashMap;
 use std::env::var;
 use std::fs::read_to_string;
-// ANIMATE
-// use std::{thread, time};
+use std::{thread, time};
 use priority_queue::DoublePriorityQueue;
 
-// ANIMATE
-// const SLEEP: time::Duration = time::Duration::from_millis(100);
+const SLEEP: time::Duration = time::Duration::from_millis(100);
 
 type Coord = (isize, isize);
 type PathMap = HashMap<Coord, Coord>;
 type CostMap = HashMap<Coord, f64>;
 
-// ANIMATE
 ///// Allows for printing animated grid state inside each cycle
-// fn clear_screen() {
-//     print!("{esc}c", esc = 27 as char);
-// }
+fn clear_screen() {
+    print!("{esc}c", esc = 27 as char);
+}
 
 /// Thank you, [Redblob Games](https://www.redblobgames.com/pathfinding/a-star/implementation.html) for the excellent implementation
 /// explanations for Dijkstra & A* search.
@@ -25,7 +22,7 @@ type CostMap = HashMap<Coord, f64>;
 /// minimum-weighted value on each step. Because of how the values are distributed in this particular graph, _most_ of the nodes
 /// (generally, _ALL_ of them for these puzzle inputs...) are visited in the quest to find the least-cost path through to the
 /// bottom-right corner of the grid.
-fn a_star_search(graph: &WeightedGraph, start: Coord, goal: Coord) -> (PathMap, CostMap) {
+fn a_star_search(graph: &WeightedGraph, start: Coord, goal: Coord, animate: bool) -> (PathMap, CostMap) {
     let mut frontier = DoublePriorityQueue::new();
     frontier.push(start, 0);
     let mut came_from: PathMap = HashMap::new();
@@ -35,11 +32,11 @@ fn a_star_search(graph: &WeightedGraph, start: Coord, goal: Coord) -> (PathMap, 
 
     while !frontier.is_empty() {
         let current = frontier.pop_min().unwrap().0;
-        // ANIMATE
-        // Do NOT use with large graphs... terminal buffer gets very full...
-        // let path_so_far = reconstruct_path(&came_from, start, current);
-        // graph.display_with_path(&path_so_far, &cost_so_far);
-        // thread::sleep(SLEEP);
+        if animate {
+            let path_so_far = reconstruct_path(&came_from, start, current);
+            graph.display_with_path(&path_so_far, &cost_so_far);
+            thread::sleep(SLEEP);
+        }
 
         if current == goal {
             break;
@@ -62,8 +59,9 @@ fn a_star_search(graph: &WeightedGraph, start: Coord, goal: Coord) -> (PathMap, 
                 came_from.insert(next, current);
             }
         }
-        // ANIMATE
-        // clear_screen();
+        if animate {
+            clear_screen();
+        }
     }
     (came_from, cost_so_far)
 }
@@ -277,20 +275,20 @@ fn parse_input(path: &str) -> WeightedGraph {
 // }
 
 fn main() {
-    let mut graph = parse_input("input.txt");
+    let mut graph = parse_input("input_example.txt");
 
     // Part 1
     let goal = graph.bottom_right();
-    let (came_from, costs) = a_star_search(&graph, (0, 0), goal);
+    let (came_from, costs) = a_star_search(&graph, (0, 0), goal, true);
     let reconstructed = reconstruct_path(&came_from, (0, 0), goal);
     graph.display_with_path(&reconstructed, &costs);
     let final_cost = costs.get(&graph.bottom_right()).unwrap().round();
     println!("Final cost: {:?}", final_cost);
 
     // Part 2
-    graph.expand(5);
+    graph.expand(3);
     let goal = graph.bottom_right();
-    let (_, costs) = a_star_search(&graph, (0, 0), goal);
+    let (_, costs) = a_star_search(&graph, (0, 0), goal, false);
     // YIKES... The `.display_with_path` function was toooo heavy for a 500 x 500 grid...
     // would need to implement a more efficient lookup for visited nodes, etc
     // let reconstructed = reconstruct_path(&came_from, (0, 0), goal);
