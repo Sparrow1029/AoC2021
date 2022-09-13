@@ -1,8 +1,6 @@
 use std::fs::File;
 use std::io::{BufRead, BufReader, Error, Read};
 
-const AOC_DIR: &str = "/Users/p2910482/Projects/rust/AoC2021";
-
 fn read_input<R: Read>(io: R) -> Result<Vec<(String, i32)>, Error> {
     let br = BufReader::new(io);
     let mut values = vec![];
@@ -28,7 +26,7 @@ impl Submarine {
             "forward" => self.h_pos += distance,
             "up" => self.v_pos -= distance,
             "down" => self.v_pos += distance,
-            &_ => println!("Invalid instruction: ({:?}, {:?})", direction, distance)
+            &_ => println!("Invalid instruction: ({:?}, {:?})", direction, distance),
         }
     }
 
@@ -38,7 +36,7 @@ impl Submarine {
             "forward" => {
                 self.h_pos += distance;
                 self.v_pos += self.aim * distance
-            },
+            }
             "up" => self.aim -= distance,
             "down" => self.aim += distance,
             &_ => println!("Invalid instruction: ({:?}, {:?})", direction, distance),
@@ -56,9 +54,8 @@ impl Submarine {
     }
 }
 
-fn main() -> Result<(), Error> {
-    let input_path = format!("{}/day02/src/input.txt", AOC_DIR);
-    let puzzle_input = read_input(File::open(input_path)?)?;
+pub fn run() -> Result<(), Error> {
+    let puzzle_input = read_input(File::open("inputs/day02.txt")?)?;
     // println!("{:?}", puzzle_input);
     let mut sub: Submarine = Default::default();
 

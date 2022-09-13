@@ -2,8 +2,6 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Error, ErrorKind, Read};
 
-const AOC_DIR: &str = "/Users/p2910482/Projects/rust/AoC2021";
-
 fn read_input<R: Read>(io: R) -> Result<Vec<Vec<u32>>, Error> {
     let br = BufReader::new(io);
     let mut values = vec![];
@@ -67,14 +65,17 @@ fn get_most_or_least_common_value(
                 return 1u32;
             }
             items[1].0
-        },
+        }
         "least" => {
             if items[0].1 == items[1].1 {
                 return 0u32;
             }
             items[0].0
-        },
-        &_ => panic!("Invalid input: '{}' should be one of 'most' or 'least'", most_or_least)
+        }
+        &_ => panic!(
+            "Invalid input: '{}' should be one of 'most' or 'least'",
+            most_or_least
+        ),
     }
 }
 
@@ -101,7 +102,10 @@ fn part2(array_2d: &Vec<Vec<u32>>, cols: usize, o2_or_co2: &str) -> u32 {
         let choice = match o2_or_co2 {
             "o2" => "most",
             "co2" => "least",
-            &_ => panic!("Invalid input: '{}' should be one of 'co2' or 'o2'", o2_or_co2)
+            &_ => panic!(
+                "Invalid input: '{}' should be one of 'co2' or 'o2'",
+                o2_or_co2
+            ),
         };
         let val = get_most_or_least_common_value(&filter_arr, i, choice);
         filter_arr.retain(|el| el[i] == val);
@@ -114,13 +118,17 @@ fn part2(array_2d: &Vec<Vec<u32>>, cols: usize, o2_or_co2: &str) -> u32 {
         final_rating <<= 1;
         final_rating |= i;
     }
-    println!("{: >3} rating: {:0>cols$b}", o2_or_co2, final_rating, cols = cols);
+    println!(
+        "{: >3} rating: {:0>cols$b}",
+        o2_or_co2,
+        final_rating,
+        cols = cols
+    );
     final_rating
 }
 
-fn main() -> Result<(), Error> {
-    let input_path = format!("{}/day03/src/input.txt", AOC_DIR);
-    let array_2d = read_input(File::open(input_path)?)?;
+pub fn run() -> Result<(), Error> {
+    let array_2d = read_input(File::open("inputs/day03.txt")?)?;
     let cols = array_2d[0].len();
 
     let mut items = count_bits_in_columns(&array_2d, cols);
