@@ -3,8 +3,6 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Error, Read};
 
-const AOC_DIR: &str = "/Users/p2910482/Projects/rust/AoC2021";
-
 /// Create line segments from Day 05 puzzle input.
 fn read_input<R: Read>(io: R) -> Result<Vec<LineSegment>, Error> {
     let br = BufReader::new(io);
@@ -123,12 +121,23 @@ impl LineSegment {
     }
 }
 
-fn main() -> Result<(), Error> {
-    let input_path = format!("{}/day05/src/input.txt", AOC_DIR);
+pub fn run(part: usize, input: Option<&String>) -> Result<(), Error> {
+    let input_path = match input {
+        Some(arg) => {
+            if arg == "example" {
+                "inputs/day05_example.txt"
+            } else {
+                println!(
+                    "{:?} is not a valid arg (try 'example'). Using default input.",
+                    arg
+                );
+                "inputs/day05.txt"
+            }
+        }
+        _ => "inputs/day05.txt",
+    };
     let line_segments = read_input(File::open(input_path)?)?;
     let mut part1_counter = HashMap::new();
-
-    let part = 2;
 
     for line in &line_segments {
         // Part 1 only wants horizontal/vertical lines
@@ -136,7 +145,7 @@ fn main() -> Result<(), Error> {
         match line.slope() {
             Some(m) => {
                 if m == 0 {
-                    ();  // note: () in control flow like this is essentially emulating a "noop"
+                    (); // note: () in control flow like this is essentially emulating a "noop"
                 } else {
                     if part == 1 {
                         continue;

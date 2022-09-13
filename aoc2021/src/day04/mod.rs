@@ -4,8 +4,6 @@ use std::fs::File;
 use std::hash::{Hash, Hasher};
 use std::io::{BufRead, BufReader, Error, Read};
 
-const AOC_DIR: &str = "/Users/p2910482/Projects/rust/AoC2021";
-
 /// Trying to learn how to consume buffers instead of just converting it to
 /// String on the heap and working with .split()...
 fn read_input<R: Read>(io: R) -> Result<(Vec<u32>, Vec<String>), Error> {
@@ -178,9 +176,19 @@ fn call_bingo(boards: &mut Vec<Board>, number: u32) -> Option<&mut Board> {
     winner
 }
 
-fn main() -> Result<(), Error> {
-    let input_path = format!("{}/day04/src/input.txt", AOC_DIR);
-    let (nums, raw_boards) = read_input(File::open(input_path)?)?;
+pub fn run(input: Option<&String>) -> Result<(), Error> {
+    let input_file = match input {
+        Some(arg) => {
+            if arg == "example" {
+                "inputs/day04_example.txt"
+            } else {
+                println!("{:?} is not a valid arg. Using default input.txt", arg);
+                "inputs/day04.txt"
+            }
+        }
+        _ => "inputs/day04.txt",
+    };
+    let (nums, raw_boards) = read_input(File::open(input_file)?)?;
     let mut boards: Vec<Board> = raw_boards.iter().map(|b| Board::from(b)).collect();
     println!("PLAY BINGO!! *COUGH* *COUGH* (so much smoke in this submarine...)");
 
@@ -209,7 +217,7 @@ fn main() -> Result<(), Error> {
         .find(|b| &b.id == winner_ids.last().unwrap())
         .unwrap();
     println!("Last board to win: {}", last_board);
-    println!("Part 2 answer: {}: ", last_board.calculate_board_product());
+    println!("Part 2 answer: {}", last_board.calculate_board_product());
 
     Ok(())
 }

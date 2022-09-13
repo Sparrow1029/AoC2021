@@ -1,7 +1,5 @@
 use std::fs::read_to_string;
 
-const AOC_DIR: &str = "/Users/p2910482/Projects/rust/AoC2021";
-
 /// Parse day07 input file (single line of comma-separated integers)
 fn parse_input(file_name: &str) -> Vec<i32> {
     let line = read_to_string(file_name).expect("file not found");
@@ -82,10 +80,18 @@ fn part2(crabs: &mut Vec<i32>) -> i32 {
     min_fuel
 }
 
-fn main() {
-    let input_path = format!("{}/day07/src/input.txt", AOC_DIR);
-    // let input_path = format!("{}/day07/src/input_example.txt", AOC_DIR);
-    let mut positions = parse_input(input_path.as_str());
+pub fn run(example: Option<&String>) {
+    let input_path = match example {
+        Some(s) => {
+            if s == "example" {
+                "inputs/day07_example.txt"
+            } else {
+                "inputs/day07.txt"
+            }
+        }
+        _ => "inputs/day07.txt",
+    };
+    let mut positions = parse_input(input_path);
 
     // Part 1
     // Find median position and calculate sum of all crabs movement to that position

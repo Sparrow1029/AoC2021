@@ -1,13 +1,17 @@
-use std::fs::read_to_string;
 use std::collections::HashMap;
+use std::fs::read_to_string;
 
-const AOC_DIR: &str = "/Users/p2910482/Projects/rust/AoC2021";
 const STATE_ARR: [u8; 9] = [1, 2, 3, 4, 5, 6, 7, 8, 0];
 
 /// Create line segments from Day 05 puzzle input.
 fn parse_input(file_name: &str) -> Vec<u8> {
     let line = read_to_string(file_name).expect("file not found");
-    line.trim().split(",").collect::<Vec<&str>>().iter().map(|v| v.parse().unwrap()).collect()
+    line.trim()
+        .split(",")
+        .collect::<Vec<&str>>()
+        .iter()
+        .map(|v| v.parse().unwrap())
+        .collect()
 }
 
 /// Recursive function to calculate lanternfish growth.
@@ -41,23 +45,28 @@ fn calculate_grow(state: &mut HashMap<u8, u64>, days: u32) -> HashMap<u8, u64> {
                 }
             } else if i > 0 && state.get(&i).is_some() {
                 // for values besides 0, shift all the previous day's counters down by one
-                *new_state.entry(i-1u8).or_default() = *state.get(&i).unwrap();
+                *new_state.entry(i - 1u8).or_default() = *state.get(&i).unwrap();
             }
         }
         // On to the next day
-        return calculate_grow(&mut new_state, days-1);
+        return calculate_grow(&mut new_state, days - 1);
     }
     state.to_owned()
 }
 
-fn main() {
-    let input_path = format!("{}/day06/src/input.txt", AOC_DIR);
-    // let input_path = format!("{}/day06/src/input_example.txt", AOC_DIR);
-    let lanternfish = parse_input(input_path.as_str());
+pub fn run(part: usize, example: bool) {
+    let input_path = match example {
+        true => "inputs/day06_example.txt",
+        false => "inputs/day06.txt",
+    };
+    let lanternfish = parse_input(input_path);
 
-    // let days = 18;   // Testing
-    // let days = 80;   // Part 1
-    let days = 256;  // Part2
+    let days = match part {
+        0 => 18,
+        1 => 80,
+        2 => 256,
+        _ => panic!("Part should be 0 (testing/example) 1 or 2"),
+    };
 
     let mut initial_state: HashMap<u8, u64> = HashMap::new();
 
