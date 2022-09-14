@@ -5,6 +5,7 @@ mod day04;
 mod day05;
 mod day06;
 mod day07;
+mod day16;
 
 use day01::run as day01_run;
 use day02::run as day02_run;
@@ -13,6 +14,7 @@ use day04::run as day04_run;
 use day05::run as day05_run;
 use day06::run as day06_run;
 use day07::run as day07_run;
+use day16::run as day16_run;
 
 use std::env;
 use std::error::Error;
@@ -104,6 +106,10 @@ fn main() -> Result<(), Box<dyn Error>> {
             } else {
                 day07_run(None);
             }
+            Ok(())
+        }
+        "16" => {
+            day16_run();
             Ok(())
         }
         _ => {
