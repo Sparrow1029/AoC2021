@@ -5,6 +5,8 @@ mod day04;
 mod day05;
 mod day06;
 mod day07;
+mod day08;
+mod day09;
 mod day16;
 
 use day01::run as day01_run;
@@ -14,6 +16,8 @@ use day04::run as day04_run;
 use day05::run as day05_run;
 use day06::run as day06_run;
 use day07::run as day07_run;
+use day08::run as day08_run;
+use day09::run as day09_run;
 use day16::run as day16_run;
 
 use std::env;
@@ -105,6 +109,22 @@ fn main() -> Result<(), Box<dyn Error>> {
                 day07_run(args.iter().nth(2));
             } else {
                 day07_run(None);
+            }
+            Ok(())
+        }
+        "8" => {
+            if args.len() == 3 && args[2] == "example" {
+                day08_run(true)?;
+            } else {
+                day08_run(false)?;
+            }
+            Ok(())
+        }
+        "9" => {
+            if args.len() == 3 && args[2] == "example" {
+                day09_run(true);
+            } else {
+                day09_run(false);
             }
             Ok(())
         }

@@ -3,9 +3,7 @@ use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::io::{self, prelude::*, BufReader};
 
-const AOC_DIR: &str = "/Users/p2910482/Projects/rust/AoC2021";
-
-/// Parse day08 input file (lines consistig of 7 space-separated strings of chars a-g, delimeter `'|'` and 4 space-separated strings of chars a-g)
+/// Parse day08 input file (lines consisting of 7 space-separated strings of chars a-g, delimeter `'|'` and 4 space-separated strings of chars a-g)
 /// representative of digital number display (when working correctly):
 /// ```
 ///   0:      1:      2:      3:      4:
@@ -161,13 +159,14 @@ fn populate_num_map(input: &mut Vec<String>, num_map: &mut HashMap<String, u8>) 
     }
 }
 
-fn main() -> io::Result<()> {
-    let input_path = format!("{}/day08/src/input.txt", AOC_DIR);
-    // let input_path = format!("{}/day08/src/input_example.txt", AOC_DIR);
-    let display = match parse_input(input_path.as_str()) {
-        Ok(result) => result,
-        Err(err) => panic!("{}", err),
+pub fn run(example: bool) -> io::Result<()> {
+    let file_path = if example == true {
+        "inputs/day08_example.txt"
+    } else {
+        "inputs/day08.txt"
     };
+
+    let display = parse_input(file_path).expect("Couldn't parse input file");
 
     let mut inputs = vec![];
     let mut outputs = vec![];

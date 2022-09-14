@@ -1,18 +1,12 @@
+use itertools::Itertools;
 use std::collections::HashSet;
-use std::env::var;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Error};
 
-use itertools::Itertools;
-#[macro_use]
-extern crate lazy_static;
-
-lazy_static! {
-    static ref AOC_DIR: String = match var("AOC_DIR") {
-        Ok(dir) => dir,
-        Err(err) => panic!("Error retrieving `AOC_DIR` env value: {}", err),
-    };
-}
+// Example data
+// const ARR_COLS: usize = 10;
+// const ARR_ROWS: usize = 5;
+// Puzzle data
 const ARR_COLS: usize = 100;
 const ARR_ROWS: usize = 100;
 const ADJACENT: [(i32, i32); 4] = [(1, 0), (0, 1), (-1, 0), (0, -1)];
@@ -172,16 +166,13 @@ impl Grid {
     }
 }
 
-fn main() {
-    let input_path = format!("{}/day09/src/input.txt", AOC_DIR.as_str());
-    //
-    // CHANGE const ARR_COLS to 10 & const ARR_ROWS to 5 for test example
-    //
-    // let input_path = format!("{}/day09/src/input_example.txt", AOC_DIR);
-    let lava_grid = match parse_input(input_path.as_str()) {
-        Ok(result) => result,
-        Err(err) => panic!("Error: {:?}", err),
+pub fn run(example: bool) {
+    let path = if example == true {
+        "inputs/day09_example.txt"
+    } else {
+        "inputs/day09.txt"
     };
+    let lava_grid = parse_input(path).expect("Error reading puzzle input");
 
     // Part 1
     let low_pts = find_low_points(&lava_grid);
