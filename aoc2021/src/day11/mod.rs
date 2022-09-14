@@ -1,9 +1,41 @@
-use std::env::var;
-use std::fmt;
-use std::fs;
+use lazy_static::lazy_static;
+use std::{env, fmt};
 use std::{thread, time};
 
-const DEBUG: bool = false;
+const PUZZLE_INPUT: &str = "\
+6617113584
+6544218638
+5457331488
+1135675587
+1221353216
+1811124378
+1387864368
+4427637262
+6778645486
+3682146745
+";
+
+const EXAMPLE_INPUT: &str = "\
+5483143223
+2745854711
+5264556173
+6141336146
+6357385478
+4167524645
+2176841721
+6882881134
+4846848554
+5283751526
+";
+
+lazy_static! {
+    static ref DEBUG: bool = if env::var("DEBUG").unwrap_or("false".to_string()) == "true" {
+        true
+    } else {
+        false
+    };
+}
+
 static ADJACENT: [(isize, isize); 8] = [
     (1, 0),
     (1, 1),
@@ -119,7 +151,11 @@ impl fmt::Display for Grid {
         for y in 0..self.h {
             for x in 0..self.w {
                 let val = self.nodes[y][x].val;
-                let bold = if val == 0 || val > 9 { "\x1b[0;91m\x1b[1m" } else { "" };
+                let bold = if val == 0 || val > 9 {
+                    "\x1b[0;91m\x1b[1m"
+                } else {
+                    ""
+                };
                 if val <= 9 {
                     string.push_str(format!("{}{}\x1b[0m", bold, val).as_str());
                 } else {
@@ -160,7 +196,7 @@ impl Grid {
                 let cur_node = &mut self.nodes[y][x];
                 if cur_node.val == 0 {
                     // already flashed
-                    continue ;
+                    continue;
                 }
                 if cur_node.flash() {
                     // Increment two counters:
@@ -180,34 +216,35 @@ impl Grid {
                     }
                 }
                 // Print out grid as you go
-                if DEBUG {
+                if *DEBUG {
                     println!("{}", self);
                     clear_screen();
                     thread::sleep(milliseconds);
                 }
             }
             // Print out grid at end of step
-            if DEBUG {
-                println!("{}\nSTEP {} COMPLETE", self, i+1);
+            if *DEBUG {
+                println!("{}\nSTEP {} COMPLETE", self, i + 1);
                 clear_screen();
                 thread::sleep(seconds);
             }
             if flashes_this_cycle == self.w * self.h {
-                println!("SYNCHRONIZATION COMPLETE:\n{}STEP: {}", self, i+1);
+                println!("SYNCHRONIZATION COMPLETE:\n{}STEP: {}", self, i + 1);
                 break;
             }
-
         }
         total_flashes
     }
 }
 
-fn main() {
-    #[rustfmt::skip]
-    let path = format!("{}/day11/src/input.txt", var("AOC_DIR").unwrap_or_else(|e| panic!("error: {} - {}", e, "AOC_DIR")));
-    // let path = format!("{}/day11/src/input_example.txt", var("AOC_DIR").unwrap_or_else(|e| panic!("error: {} - {}", e, "AOC_DIR")));
+pub fn run(example: bool) {
+    let input = if example == true {
+        EXAMPLE_INPUT
+    } else {
+        PUZZLE_INPUT
+    };
 
-    let grid = Grid::from(fs::read_to_string(path).expect("failed to read file"));
+    let grid = Grid::from(input.to_string());
     println!("INITIAL GRID \n{}", grid);
     let seconds = time::Duration::from_millis(1500);
     thread::sleep(seconds);
@@ -215,7 +252,10 @@ fn main() {
 
     let mut part1 = grid.clone();
     let mut total_flashes = part1.count_flashes(100);
-    println!("Part 1:\n\nFINAL GRID\n{}total flashes: {}\n", part1, total_flashes);
+    println!(
+        "Part 1:\n\nFINAL GRID\n{}total flashes: {}\n",
+        part1, total_flashes
+    );
 
     let mut part2 = grid.clone();
     println!("Part 2:");

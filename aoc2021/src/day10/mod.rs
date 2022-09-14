@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::env::var;
 use std::fs::File;
 use std::hash::Hash;
 use std::io::{BufRead, BufReader};
@@ -8,10 +7,9 @@ static OPEN_SYMBOLS: [char; 4] = ['<', '(', '{', '['];
 static CLOSE_SYMBOLS: [char; 4] = ['>', ')', '}', ']'];
 static PAIRS: [(char, char); 4] = [('>', '<'), (')', '('), ('}', '{'), (']', '[')];
 
-fn parse_input(path: String) -> Vec<Vec<char>> {
-    let reader = BufReader::new(
-        File::open(path.as_str()).unwrap_or_else(|e| panic!("Error opening file: {}", e)),
-    );
+fn parse_input(path: &str) -> Vec<Vec<char>> {
+    let reader =
+        BufReader::new(File::open(path).unwrap_or_else(|e| panic!("Error opening file: {}", e)));
     let mut parsed = vec![];
 
     for line in reader.lines() {
@@ -98,11 +96,13 @@ fn calculate_autocomplete_score(symbols: Vec<char>) -> u64 {
     total_score
 }
 
-fn main() {
-    #[rustfmt::skip]
-    let input_path = format!("{}/day10/src/input.txt", var("AOC_DIR").unwrap_or_else(|e| panic!("error: {} - {}", e, "AOC_DIR")));
-    // let input_path = format!("{}/day10/src/input_example.txt", var("AOC_DIR").unwrap_or_else(|e| panic!("error: {} - {}", e, "AOC_DIR")));
-    let navigation = parse_input(input_path);
+pub fn run(example: bool) {
+    let path = if example == true {
+        "inputs/day10_example.txt"
+    } else {
+        "inputs/day10.txt"
+    };
+    let navigation = parse_input(path);
 
     // Part 1
     let mut pairs = HashMap::from(PAIRS);

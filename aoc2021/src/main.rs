@@ -7,6 +7,8 @@ mod day06;
 mod day07;
 mod day08;
 mod day09;
+mod day10;
+mod day11;
 mod day16;
 
 use day01::run as day01_run;
@@ -18,6 +20,8 @@ use day06::run as day06_run;
 use day07::run as day07_run;
 use day08::run as day08_run;
 use day09::run as day09_run;
+use day10::run as day10_run;
+use day11::run as day11_run;
 use day16::run as day16_run;
 
 use std::env;
@@ -125,6 +129,26 @@ fn main() -> Result<(), Box<dyn Error>> {
                 day09_run(true);
             } else {
                 day09_run(false);
+            }
+            Ok(())
+        }
+        "10" => {
+            if args.len() == 3 && args[2] == "example" {
+                day10_run(true);
+            } else {
+                day10_run(false);
+            }
+            Ok(())
+        }
+        "11" => {
+            if args.contains(&String::from("animate")) {
+                env::set_var("DEBUG", "true")
+            }
+
+            if args.contains(&String::from("example")) {
+                day11_run(true);
+            } else {
+                day11_run(false);
             }
             Ok(())
         }
