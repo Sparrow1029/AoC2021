@@ -1,5 +1,4 @@
 use std::{collections::HashSet, fs};
-use std::env::var;
 
 // So easy to define type aliases in rust!
 type Point = (isize, isize);
@@ -67,7 +66,10 @@ fn parse_input(path: &str) -> (Vec<Point>, Vec<Point>) {
         .map(|s| s.to_string())
         .collect::<Vec<String>>();
     for line in instructions[0].lines() {
-        let split = line.split(',').map(|i| isize::from_str_radix(i, 10).unwrap()).collect::<Vec<isize>>();
+        let split = line
+            .split(',')
+            .map(|i| isize::from_str_radix(i, 10).unwrap())
+            .collect::<Vec<isize>>();
         points.push((split[0], split[1]));
     }
     for line in instructions[1].lines() {
@@ -76,13 +78,11 @@ fn parse_input(path: &str) -> (Vec<Point>, Vec<Point>) {
         let split: Vec<&str> = line.split(' ').collect();
         let fold: Vec<&str> = split[2].split('=').collect();
         match fold[0] {
-            "x" => {
-                folds.push((isize::from_str_radix(fold[1], 10).unwrap(), 0))
-            },
-            "y" => {
-                folds.push((0, isize::from_str_radix(fold[1], 10).unwrap()))
-            },
-            _ => { panic!("WUT") }
+            "x" => folds.push((isize::from_str_radix(fold[1], 10).unwrap(), 0)),
+            "y" => folds.push((0, isize::from_str_radix(fold[1], 10).unwrap())),
+            _ => {
+                panic!("WUT")
+            }
         }
     }
     (points, folds)
@@ -104,13 +104,20 @@ fn print_pt_grid(pts: Vec<Point>) {
     }
 }
 
-fn main() {
-    let path = format!("{}/day13/src/input.txt", var("AOC_DIR").unwrap_or_else(|_| "no path".to_string()));
-    let (mut points, folds) = parse_input(path.as_str());
+pub fn run(example: bool) {
+    let path = if example {
+        "inputs/day13_example.txt"
+    } else {
+        "inputs/day13.txt"
+    };
+    let (mut points, folds) = parse_input(path);
 
     // Part 1
     points = fold(*folds.first().unwrap(), &points);
-    println!("Part 1 - number of visible points after single fold: {}\n", points.len());
+    println!(
+        "Part 1 - number of visible points after single fold: {}\n",
+        points.len()
+    );
 
     // Part 2
     for f in folds {

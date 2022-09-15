@@ -1,8 +1,7 @@
 /// Copied from https://github.com/McSick/AdventOfCode2021/blob/main/12/tree-pathfind/src/main.rs
 use std::collections::{HashMap, HashSet};
-use std::env::var;
-use std::fs;
 use std::hash::Hash;
+use std::{env, fs};
 
 const MAX_VTEX: usize = 13;
 
@@ -137,16 +136,20 @@ impl From<String> for Graph {
     }
 }
 
-fn main() {
-    let path = format!(
-        "{}/day12/src/input.txt",
-        var("AOC_DIR").unwrap_or_else(|e| panic!("error: {} - {}", e, "AOC_DIR"))
-    );
+pub fn run(example: bool) {
+    let path = if example {
+        "inputs/day12_example.txt"
+    } else {
+        "inputs/day12.txt"
+    };
+
     // Part 1
     let mut graph = Graph::from(
         fs::read_to_string(path).unwrap_or_else(|e| panic!("error opening file: {}", e)),
     );
-    // graph.print();
+    if env::var("DEBUG").unwrap_or("false".to_string()) == "true" {
+        graph.print();
+    }
     let result = graph.traverse(graph.get_vertex("start"), HashSet::new(), true);
     println!("Part 1: {}", result);
 

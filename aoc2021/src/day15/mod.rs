@@ -1,8 +1,18 @@
+use priority_queue::DoublePriorityQueue;
 use std::collections::HashMap;
-use std::env::var;
+use std::env;
 use std::fs::read_to_string;
 use std::{thread, time};
-use priority_queue::DoublePriorityQueue;
+
+use lazy_static::lazy_static;
+
+lazy_static! {
+    static ref DEBUG: bool = if env::var("DEBUG").unwrap_or("false".to_string()) == "true" {
+        true
+    } else {
+        false
+    };
+}
 
 const SLEEP: time::Duration = time::Duration::from_millis(100);
 
@@ -22,7 +32,12 @@ fn clear_screen() {
 /// minimum-weighted value on each step. Because of how the values are distributed in this particular graph, _most_ of the nodes
 /// (generally, _ALL_ of them for these puzzle inputs...) are visited in the quest to find the least-cost path through to the
 /// bottom-right corner of the grid.
-fn a_star_search(graph: &WeightedGraph, start: Coord, goal: Coord, animate: bool) -> (PathMap, CostMap) {
+fn a_star_search(
+    graph: &WeightedGraph,
+    start: Coord,
+    goal: Coord,
+    animate: bool,
+) -> (PathMap, CostMap) {
     let mut frontier = DoublePriorityQueue::new();
     frontier.push(start, 0);
     let mut came_from: PathMap = HashMap::new();
@@ -76,7 +91,7 @@ fn reconstruct_path(came_from: &PathMap, start: Coord, goal: Coord) -> Vec<Coord
     while current != start {
         path.push(current);
         current = *came_from.get(&current).unwrap();
-   }
+    }
     path.push(start);
     path = path.iter().rev().map(|v| *v).collect();
     path
@@ -103,13 +118,13 @@ impl WeightedGraph {
     fn get(&self, id: Coord) -> Option<f64> {
         match self.weights.get(&id) {
             Some(result) => Some(*result),
-            None => None
+            None => None,
         }
     }
 
     /// Get the (x, y) coordinate representing the bottom-right corner of the grid
     fn bottom_right(&self) -> Coord {
-        (self.width-1, self.height-1)
+        (self.width - 1, self.height - 1)
     }
 
     /// Added the twist to the cost (though mostly unecessary for AoC2021 graph input) from
@@ -137,7 +152,7 @@ impl WeightedGraph {
     /// Return all E, W, N, S neighbors for a given coordinate (x, y) point.
     fn neighbors(&self, id: Coord) -> Vec<Coord> {
         let (x, y) = id;
-        let mut neighbors: Vec<Coord> = Vec::from([(x + 1, y), (x -1, y), (x, y - 1), (x, y + 1)]);
+        let mut neighbors: Vec<Coord> = Vec::from([(x + 1, y), (x - 1, y), (x, y - 1), (x, y + 1)]);
         if (x + y) % 2 == 0 {
             for (i, val) in neighbors.clone().iter().enumerate() {
                 neighbors[i] = *val;
@@ -202,7 +217,7 @@ impl WeightedGraph {
         for y in 0..self.height {
             for f in 0..=factor {
                 for x in 0..self.width {
-                    let new_x = (f+1) * self.width + x;
+                    let new_x = (f + 1) * self.width + x;
                     let old_x = f * self.width + x;
                     let cur_val = self.get((old_x, y)).unwrap();
                     let new_val = cur_val + 1.0;
@@ -221,7 +236,7 @@ impl WeightedGraph {
         for f in 0..=factor {
             for y in 0..self.height {
                 for x in 0..self.width {
-                    let new_y = (f+1) * self.height + y;
+                    let new_y = (f + 1) * self.height + y;
                     let old_y = f * self.height + y;
                     let cur_val = self.get((x, old_y)).unwrap();
                     let new_val = cur_val + 1.0;
@@ -249,8 +264,7 @@ fn get_max_xy(pts: &Vec<Coord>) -> Coord {
 fn parse_input(path: &str) -> WeightedGraph {
     // let mut graph = HashMap::new();
     let mut pt_vec: Vec<((isize, isize), f64)> = vec![];
-    let input_path = format!("{}/day15/src/{}", var("AOC_DIR").unwrap_or_else(|e| panic!("{}", e)), path);
-    let file = read_to_string(input_path.as_str()).unwrap_or_else(|e| panic!("error opening file: {}", e));
+    let file = read_to_string(path).unwrap_or_else(|e| panic!("error opening file: {}", e));
     let mut y = 0;
     let mut x = 0;
     for line in file.lines() {
@@ -263,7 +277,9 @@ fn parse_input(path: &str) -> WeightedGraph {
     }
     let (width, height) = get_max_xy(&pt_vec.iter().map(|pt| pt.0).collect::<Vec<Coord>>());
     WeightedGraph {
-        width: width + 1, height: height + 1, weights: HashMap::from_iter(pt_vec)
+        width: width + 1,
+        height: height + 1,
+        weights: HashMap::from_iter(pt_vec),
     }
 }
 
@@ -274,25 +290,33 @@ fn parse_input(path: &str) -> WeightedGraph {
 //     sum
 // }
 
-fn main() {
-    let mut graph = parse_input("input_example.txt");
+pub fn run(example: bool) {
+    let path = if example {
+        "inputs/day15_example.txt"
+    } else {
+        "inputs/day15.txt"
+    };
+    let mut graph = parse_input(path);
 
     // Part 1
     let goal = graph.bottom_right();
-    let (came_from, costs) = a_star_search(&graph, (0, 0), goal, true);
+    let (came_from, costs) = a_star_search(&graph, (0, 0), goal, *DEBUG);
     let reconstructed = reconstruct_path(&came_from, (0, 0), goal);
-    graph.display_with_path(&reconstructed, &costs);
+    if *DEBUG {
+        clear_screen();
+        graph.display_with_path(&reconstructed, &costs);
+    }
     let final_cost = costs.get(&graph.bottom_right()).unwrap().round();
-    println!("Final cost: {:?}", final_cost);
+    println!("Part 1 - Final cost: {:?}", final_cost);
 
     // Part 2
     graph.expand(3);
     let goal = graph.bottom_right();
-    let (_, costs) = a_star_search(&graph, (0, 0), goal, false);
+    let (_, costs) = a_star_search(&graph, (0, 0), goal, *DEBUG);
     // YIKES... The `.display_with_path` function was toooo heavy for a 500 x 500 grid...
     // would need to implement a more efficient lookup for visited nodes, etc
     // let reconstructed = reconstruct_path(&came_from, (0, 0), goal);
     // graph.display_with_path(&reconstructed, &costs);
-    let final_cost = costs.get(&graph.bottom_right()).unwrap().round();
-    println!("Final cost {:?}", final_cost);
+    let final_cost = costs.get(&graph.bottom_right()).unwrap();
+    println!("Part 2 - Final cost {:?}", final_cost);
 }

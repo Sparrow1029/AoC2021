@@ -176,17 +176,11 @@ fn call_bingo(boards: &mut Vec<Board>, number: u32) -> Option<&mut Board> {
     winner
 }
 
-pub fn run(input: Option<&String>) -> Result<(), Error> {
-    let input_file = match input {
-        Some(arg) => {
-            if arg == "example" {
-                "inputs/day04_example.txt"
-            } else {
-                println!("{:?} is not a valid arg. Using default input.txt", arg);
-                "inputs/day04.txt"
-            }
-        }
-        _ => "inputs/day04.txt",
+pub fn run(example: bool) -> Result<(), Error> {
+    let input_file = if example {
+        "inputs/day04_example.txt"
+    } else {
+        "inputs/day04.txt"
     };
     let (nums, raw_boards) = read_input(File::open(input_file)?)?;
     let mut boards: Vec<Board> = raw_boards.iter().map(|b| Board::from(b)).collect();

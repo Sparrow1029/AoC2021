@@ -9,7 +9,11 @@ mod day08;
 mod day09;
 mod day10;
 mod day11;
+mod day12;
+mod day13;
+mod day15;
 mod day16;
+mod day17;
 
 use day01::run as day01_run;
 use day02::run as day02_run;
@@ -22,7 +26,11 @@ use day08::run as day08_run;
 use day09::run as day09_run;
 use day10::run as day10_run;
 use day11::run as day11_run;
+use day12::run as day12_run;
+use day13::run as day13_run;
+use day15::run as day15_run;
 use day16::run as day16_run;
+use day17::run as day17_run;
 
 use std::env;
 use std::error::Error;
@@ -54,6 +62,7 @@ impl Error for CustomError {
 
 fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<String> = env::args().collect();
+    let example: bool = args.contains(&String::from("example"));
     let query = args
         .iter()
         .nth(1)
@@ -73,11 +82,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             Ok(())
         }
         "4" => {
-            if args.len() == 3 {
-                day04_run(args.iter().nth(2))?;
-            } else {
-                day04_run(None)?;
-            }
+            day04_run(example)?;
             Ok(())
         }
         "5" => {
@@ -117,43 +122,48 @@ fn main() -> Result<(), Box<dyn Error>> {
             Ok(())
         }
         "8" => {
-            if args.len() == 3 && args[2] == "example" {
-                day08_run(true)?;
-            } else {
-                day08_run(false)?;
-            }
+            day08_run(example)?;
             Ok(())
         }
         "9" => {
-            if args.len() == 3 && args[2] == "example" {
-                day09_run(true);
-            } else {
-                day09_run(false);
-            }
+            day09_run(example);
             Ok(())
         }
         "10" => {
-            if args.len() == 3 && args[2] == "example" {
-                day10_run(true);
-            } else {
-                day10_run(false);
-            }
+            day10_run(example);
             Ok(())
         }
         "11" => {
             if args.contains(&String::from("animate")) {
                 env::set_var("DEBUG", "true")
             }
-
-            if args.contains(&String::from("example")) {
-                day11_run(true);
-            } else {
-                day11_run(false);
+            day11_run(example);
+            Ok(())
+        }
+        "12" => {
+            if args.contains(&String::from("debug")) {
+                env::set_var("DEBUG", "true");
             }
+            day12_run(example);
+            Ok(())
+        }
+        "13" => {
+            day13_run(example);
+            Ok(())
+        }
+        "15" => {
+            if args.contains(&String::from("debug")) {
+                env::set_var("DEBUG", "true");
+            }
+            day15_run(example);
             Ok(())
         }
         "16" => {
             day16_run();
+            Ok(())
+        }
+        "17" => {
+            day17_run(example);
             Ok(())
         }
         _ => {
